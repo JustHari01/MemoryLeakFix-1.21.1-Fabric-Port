@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "memoryleakfix",
+  "version": "${version}",
+  "name": "Memory Leak Fix Unofficial Port",
+  "description": "Unofficial standalone Fabric port of Memory Leak Fix for Minecraft 1.21.1.",
+  "authors": [
+    "FX - PR0CESS",
+    "JustHari01"
+  ],
+  "contact": {
+    "homepage": "https://github.com/FxMorin/MemoryLeakFix"
+  },
+  "icon": "icon.png",
+  "license": "LGPL-2.1-only",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "ca.fxco.memoryleakfix.fabric.MemoryLeakFixFabric"
+    ]
+  },
+  "mixins": [
+    "memoryleakfix.mixins.json",
+    "memoryleakfix-fabric.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.14",
+    "minecraft": "~1.21.1",
+    "java": ">=21"
+  }
+}

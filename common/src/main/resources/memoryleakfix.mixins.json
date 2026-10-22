@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "refmap": "memoryleakfix.refmap.json",
+  "package": "ca.fxco.memoryleakfix.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+    "hugeScreenshotLeak.Minecraft_screenshotMixin",
+    "targetEntityLeak.Minecraft_targetClearMixin"
+  ],
+  "mixins": [
+    "biomeTemperatureLeak.Biome_threadLocalMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "plugin": "ca.fxco.memoryleakfix.config.MemoryLeakFixMixinConfigPlugin"
+}

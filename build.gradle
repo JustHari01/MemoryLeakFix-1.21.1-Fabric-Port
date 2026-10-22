@@ -1,0 +1,121 @@
+plugins {
+    id 'fabric-loom' version '1.7.4'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.fabricmc.net/' }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['common/src/main/java', 'fabric/src/main/java']
+            exclude 'ca/fxco/memoryleakfix/mixin/drownedNavigationLeak/**'
+            exclude 'ca/fxco/memoryleakfix/mixin/entityMemoriesLeak/**'
+            exclude 'ca/fxco/memoryleakfix/mixin/readResourcesLeak/**'
+            exclude 'ca/fxco/memoryleakfix/mixin/tagKeyLeak/**'
+            exclude 'ca/fxco/memoryleakfix/mixin/biomeTemperatureLeak/**'
+            exclude 'ca/fxco/memoryleakfix/mixin/hugeScreenshotLeak/**'
+            exclude 'ca/fxco/memoryleakfix/mixin/targetEntityLeak/**'
+        }
+        resources.srcDirs = ['common/src/main/resources', 'fabric/src/main/resources']
+    }
+    mixins {
+        java {
+            srcDirs = ['common/src/main/java']
+            include 'ca/fxco/memoryleakfix/mixin/biomeTemperatureLeak/**'
+            include 'ca/fxco/memoryleakfix/mixin/hugeScreenshotLeak/**'
+            include 'ca/fxco/memoryleakfix/mixin/targetEntityLeak/**'
+        }
+        compileClasspath += sourceSets.main.compileClasspath + files(layout.buildDirectory.dir('classes/java/main'))
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+sourceSets.main.output.dir(layout.buildDirectory.dir('classes/java/mixins'), builtBy: tasks.named('compileMixinsJava'))
+
+loom {
+    mixin {
+        defaultRefmapName = 'memoryleakfix.refmap.json'
+        add sourceSets.mixins
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
+
+    modImplementation "io.github.llamalad7:mixinextras-fabric:${project.mixinextras_version}"
+    include "io.github.llamalad7:mixinextras-fabric:${project.mixinextras_version}"
+    annotationProcessor "io.github.llamalad7:mixinextras-common:${project.mixinextras_version}"
+    compileOnly "org.jetbrains:annotations:24.1.0"
+}
+
+processResources {
+    inputs.property 'version', project.version
+    exclude 'memoryleakfix-16.mixins.json'
+    filesMatching('fabric.mod.json') {
+        expand version: project.version
+    }
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+tasks.named('compileMixinsJava') {
+    dependsOn tasks.named('compileJava')
+    options.encoding = 'UTF-8'
+    options.release = 8
+}
+
+jar {
+    from('LICENSE') {
+        into 'META-INF/licenses'
+        rename { 'LGPL-2.1-only.txt' }
+    }
+    from('PORT-NOTICE.md') {
+        into 'META-INF'
+    }
+}
+
+tasks.named('sourcesJar') {
+    from sourceSets.mixins.allSource
+    from('LICENSE') {
+        into 'META-INF/licenses'
+        rename { 'LGPL-2.1-only.txt' }
+    }
+    from('PORT-NOTICE.md') {
+        into 'META-INF'
+    }
+    from('README.md')
+}
+
+tasks.register('sourceBundle', Zip) {
+    archiveClassifier = 'source-code'
+    from('common/src/main/java') { into 'common/src/main/java' }
+    from('common/src/main/resources') { into 'common/src/main/resources' }
+    from('fabric/src/main/java') { into 'fabric/src/main/java' }
+    from('fabric/src/main/resources') { into 'fabric/src/main/resources' }
+    from('gradle/wrapper') { into 'gradle/wrapper' }
+    from('build.gradle', 'gradle.properties', 'settings.gradle', 'gradlew', 'gradlew.bat', 'LICENSE', 'README.md', 'PORT-NOTICE.md')
+}
+
+tasks.named('build') {
+    dependsOn tasks.named('sourceBundle')
+}
